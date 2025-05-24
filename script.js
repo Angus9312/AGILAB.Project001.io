@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- Functions ---
+    // --- Functions ---1
     function updateGenerateButtonState() {
         btnGenerateVideos.disabled = !(currentPhotoSelected && destinationPhotoSelected);
     }
