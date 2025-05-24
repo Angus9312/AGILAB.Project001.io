@@ -1,8 +1,7 @@
-videos/Map_Navigation.mp4
-videos/Visual_Navigation.mp4
+連線網站的網址：https://angus9312.github.io/AGILAB.Project001.io/
 
 
-material design 3
-
-即時視覺導航：右邊放根據手機影像的室內地圖即時定位(Camera影像 --> Encoder --> 辨識當前在哪一個位置 --> 畫圖)
-
+操作步驟：
+	1. 上傳當前位置及目的地位置照片
+	2. 點擊生成影片，即可預覽「視覺導航影片」及「室內地圖定位與導航」
+	3. 導航影片可選擇「視覺導航」或「即時視覺導航」

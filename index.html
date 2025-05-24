@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AGILAB純視覺定位模型</title> <!-- <<< 網站分頁名稱已更改 -->
+    <title>AGILAB純視覺定位模型</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,7 +12,6 @@
 
         <section id="photo-upload-section">
             <h2>1. 上傳位置照片</h2>
-            <!-- ... 內容不變 ... -->
             <div class="photo-upload-area">
                 <div class="photo-box">
                     <label for="current-location-file">目前位置照片：</label>
@@ -48,14 +47,13 @@
 
             <div id="video-output-area" class="video-output-area hidden">
                 <div class="video-box">
-                    <!-- 初始標題根據預設 "視覺導航" 模式設定 -->
-                    <h3 id="visual-nav-title">視覺導航影片</h3> <!-- <<< 初始標題已更改 -->
+                    <h3 id="visual-nav-title">視覺導航影片</h3>
                     <video id="visual-nav-video" controls autoplay playsinline muted></video>
                 </div>
                 <div class="video-box">
-                     <!-- 初始標題根據預設 "視覺導航" 模式設定 -->
-                    <h3 id="indoor-map-title">室內地圖定位與導航</h3> <!-- (保持上次的，符合標準模式右側) -->
-                    <video id="indoor-map-video" controls></video>
+                    <h3 id="indoor-map-title">室內地圖定位與導航</h3>
+                    <!-- <<< 為 indoor-map-video 添加 playsinline 屬性 >>> -->
+                    <video id="indoor-map-video" controls playsinline></video>
                 </div>
             </div>
         </section>
