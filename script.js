@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- DOM Elements ---
+    // --- DOM Elements1 ---
     const btnSelectCurrentPhoto = document.getElementById('btn-select-current-photo');
     const btnSelectDestinationPhoto = document.getElementById('btn-select-destination-photo');
     const currentPhotoFileInp = document.getElementById('current-location-file');
