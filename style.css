@@ -1,0 +1,208 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 20px;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+.container {
+    max-width: 800px; /* Adjust as needed */
+    margin: auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+h1, h2, h3 {
+    color: #333;
+    text-align: center;
+    margin-bottom: 15px;
+}
+h1 {
+    margin-bottom: 30px;
+}
+
+section {
+    margin-bottom: 30px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+button {
+    background: #5cb85c;
+    color: #fff;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 10px;
+}
+
+#video-generation-output-section > button {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 15px;
+}
+
+#photo-upload-section button {
+    display: inline-block;
+}
+
+button:hover {
+    background: #4cae4c;
+}
+
+button:disabled {
+    background: #ccc;
+    color: #888;
+    cursor: not-allowed;
+}
+
+.photo-upload-area {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+
+.photo-box {
+    text-align: center;
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px dashed #ccc;
+    border-radius: 4px;
+    width: 45%; /* Adjust if needed, ensure sum <= 100% with margins/paddings */
+    min-width: 250px;
+    box-sizing: border-box;
+}
+
+.photo-preview {
+    display: block;
+    max-width: 200px;
+    max-height: 150px;
+    margin: 10px auto;
+    border: 1px solid #eee;
+    object-fit: cover;
+    display: none; /* Initially hidden */
+}
+
+.photo-name-display {
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 5px;
+    word-break: break-all;
+}
+
+.section-header-with-toggle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    margin-bottom: 15px;
+}
+
+.section-header-with-toggle h2 {
+    margin: 0;
+}
+
+.ios-toggle-switch-container {
+    display: flex;
+    align-items: center;
+    margin-left: 20px;
+}
+
+.ios-toggle-checkbox {
+    display: none;
+}
+
+.ios-toggle-label {
+    display: block;
+    position: relative;
+    width: 52px;
+    height: 32px;
+    border-radius: 16px;
+    background-color: #e9e9eb;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
+}
+
+.ios-toggle-switch-knob {
+    display: block;
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    background-color: white;
+    border-radius: 14px;
+    top: 2px;
+    left: 2px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    transition: transform 0.3s ease;
+}
+
+.ios-toggle-checkbox:checked + .ios-toggle-label {
+    background-color: #34c759;
+}
+
+.ios-toggle-checkbox:checked + .ios-toggle-label .ios-toggle-switch-knob {
+    transform: translateX(20px);
+}
+
+.nav-mode-text-label {
+    font-size: 0.95em;
+    color: #333;
+    margin-left: 10px;
+    font-weight: 500;
+}
+
+.video-output-area {
+    display: flex;
+    justify-content: space-around; /* Distributes space between video boxes */
+    flex-wrap: wrap;
+    margin-top: 20px;
+    align-items: flex-start; /* Aligns the top of the .video-box elements */
+}
+
+.video-box {
+    width: 48%; /* Allows for a small gap if space-around is used */
+    min-width: 250px;
+    margin-bottom: 20px;
+    text-align: center;
+    background-color: #f9f9f9;
+    padding: 10px;
+    box-sizing: border-box;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column; /* Stack title above video */
+}
+
+/* Default styles for both video players */
+#visual-nav-video,
+#indoor-map-video {
+    width: 100%; /* Fill the width of .video-box */
+    height: auto; /* Height will be determined by content or aspect-ratio */
+    background-color: #000; /* Black background for letterboxing/pillarboxing */
+    border-radius: 5px;
+    display: block; /* Remove extra space below if it were inline */
+    object-fit: cover; /* Default: cover the area, may crop. Use 'contain' to see full video. */
+}
+
+/* Styles applied when .video-output-area has the .realtime-mode class (for 即時視覺導航) */
+.video-output-area.realtime-mode #visual-nav-video,
+.video-output-area.realtime-mode #indoor-map-video {
+    aspect-ratio: 16 / 9; /* Force 16:9 aspect ratio (common landscape) */
+    height: auto;         /* Height is automatically calculated based on width and aspect-ratio */
+    object-fit: cover;    /* Fill the 16:9 box, cropping if original aspect ratio differs.
+                             Change to 'contain' if you want to see the entire video frame
+                             with black bars if the aspect ratio doesn't match 16:9. */
+}
+
+.hidden {
+    display: none !important;
+}

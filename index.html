@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AGILAB純視覺定位模型</title> <!-- <<< 網站分頁名稱已更改 -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>純視覺定位模型</h1>
+
+        <section id="photo-upload-section">
+            <h2>1. 上傳位置照片</h2>
+            <!-- ... 內容不變 ... -->
+            <div class="photo-upload-area">
+                <div class="photo-box">
+                    <label for="current-location-file">目前位置照片：</label>
+                    <input type="file" id="current-location-file" accept="image/*" style="display: none;">
+                    <button id="btn-select-current-photo">選擇照片</button>
+                    <img id="img-current-photo" src="#" alt="目前位置預覽" class="photo-preview">
+                    <p id="current-photo-name" class="photo-name-display">未選擇圖片</p>
+                </div>
+                <div class="photo-box">
+                    <label for="destination-file">目的地位置照片：</label>
+                    <input type="file" id="destination-file" accept="image/*" style="display: none;">
+                    <button id="btn-select-destination-photo">選擇照片</button>
+                    <img id="img-destination-photo" src="#" alt="目的地預覽" class="photo-preview">
+                    <p id="destination-photo-name" class="photo-name-display">未選擇圖片</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="video-generation-output-section">
+            <div class="section-header-with-toggle">
+                <h2>2. 導航影片</h2>
+                <div class="ios-toggle-switch-container">
+                    <input type="checkbox" id="nav-mode-toggle" class="ios-toggle-checkbox">
+                    <label for="nav-mode-toggle" class="ios-toggle-label">
+                        <span class="ios-toggle-inner"></span>
+                        <span class="ios-toggle-switch-knob"></span>
+                    </label>
+                    <span id="nav-mode-text" class="nav-mode-text-label">視覺導航</span>
+                </div>
+            </div>
+
+            <button id="btn-generate-videos" disabled>生成影片</button>
+
+            <div id="video-output-area" class="video-output-area hidden">
+                <div class="video-box">
+                    <!-- 初始標題根據預設 "視覺導航" 模式設定 -->
+                    <h3 id="visual-nav-title">視覺導航影片</h3> <!-- <<< 初始標題已更改 -->
+                    <video id="visual-nav-video" controls autoplay playsinline muted></video>
+                </div>
+                <div class="video-box">
+                     <!-- 初始標題根據預設 "視覺導航" 模式設定 -->
+                    <h3 id="indoor-map-title">室內地圖定位與導航</h3> <!-- (保持上次的，符合標準模式右側) -->
+                    <video id="indoor-map-video" controls></video>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
