@@ -23,8 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let cameraStream = null;
     let globalIsSyncing = false;
     let videosPreloaded = false;
-    let visualNavStandardReady = false; // NEW: Flag for visualNavVideo in standard mode
-    let indoorMapStandardReady = false; // NEW: Flag for indoorMapVideo in standard mode
+    let visualNavStandardReady = false;
+    let indoorMapStandardReady = false;
 
     // --- Configuration ---
     const config = {
@@ -143,10 +143,6 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log(`${videoElement.id} emptied event`);
             updateLoadingProgress(videoElement, 0);
         });
-        // Initial check if already loading due to preload, but not enough data
-        if (videoElement.src && videoElement.networkState === HTMLMediaElement.NETWORK_LOADING && videoElement.readyState < HTMLMediaElement.HAVE_ENOUGH_DATA && videoElement.srcObject !== cameraStream) {
-            showLoadingAnimation(videoElement);
-        }
     }
     
     // --- Core Functions ---
@@ -163,13 +159,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 imgElement.style.display = 'block';
             }
             reader.readAsDataURL(file);
-            nameDisplayElement.textContent = `已選擇: ${file.name}`;
+            nameDisplayElement.textContent = `Selected: ${file.name}`; // MODIFIED
             if (photoType === 'current') currentPhotoSelected = true;
             else if (photoType === 'destination') destinationPhotoSelected = true;
         } else {
             imgElement.src = "#";
             imgElement.style.display = 'none';
-            nameDisplayElement.textContent = "未選擇圖片";
+            nameDisplayElement.textContent = "No image selected"; // MODIFIED
             if (photoType === 'current') currentPhotoSelected = false;
             else if (photoType === 'destination') destinationPhotoSelected = false;
         }
@@ -214,10 +210,10 @@ document.addEventListener('DOMContentLoaded', () => {
             visualNavVideo.controls = false; 
             await visualNavVideo.play(); 
             console.log("Camera started successfully and playing.");
-            visualNavTitle.textContent = "當前位置影像"; 
+            visualNavTitle.textContent = "Current Location Image"; // MODIFIED
         } catch (err) {
             console.error("Error starting camera:", err);
-            visualNavTitle.textContent = "鏡頭畫面 (錯誤)";
+            visualNavTitle.textContent = "Camera Feed (Error)"; // MODIFIED
             if (cameraStream) {
                 cameraStream.getTracks().forEach(track => track.stop());
                 cameraStream = null;
@@ -255,12 +251,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function attemptSynchronizedPlay(isInitialPlayIntent) {
-        if (navModeToggle.checked) return; // Only for standard mode
+        if (navModeToggle.checked) return; 
 
         if (visualNavStandardReady && indoorMapStandardReady) {
             console.log("Both standard videos ready. Attempting synchronized play.");
-            let playVisual = isInitialPlayIntent || (!visualNavVideo.paused && !visualNavVideo.error && visualNavVideo.dataset.intendedToPlay === 'true');
-            let playIndoor = isInitialPlayIntent || (!indoorMapVideo.paused && !indoorMapVideo.error && indoorMapVideo.dataset.intendedToPlay === 'true');
+            let playVisual = isInitialPlayIntent || visualNavVideo.dataset.intendedToPlay === 'true';
+            let playIndoor = isInitialPlayIntent || indoorMapVideo.dataset.intendedToPlay === 'true';
 
             if (playVisual) {
                 visualNavVideo.play().catch(e => console.warn(`Error playing visualNavVideo (sync attempt):`, e));
@@ -268,14 +264,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (playIndoor) {
                 indoorMapVideo.play().catch(e => console.warn(`Error playing indoorMapVideo (sync attempt):`, e));
             }
-            // Reset flags if you want them to re-evaluate readiness next time
-            // visualNavStandardReady = false; 
-            // indoorMapStandardReady = false;
         } else {
             console.log(`Synchronized play condition not met: visualNav=${visualNavStandardReady}, indoorMap=${indoorMapStandardReady}`);
         }
     }
-
 
     function updateVisualNavSource() {
         const isRealtimeMode = navModeToggle.checked;
@@ -286,7 +278,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const indoorMapWasPlayingPreviously = !indoorMapVideo.paused && indoorMapVideo.readyState >= 2;
         const indoorMapCurrentTime = indoorMapVideo.currentTime;
 
-        // isInitialGenerationPlay helps decide if we should force an autoplay attempt
         const isInitialGenerationPlay = !videoOutputArea.classList.contains('hidden') &&
                                        !isRealtimeMode &&
                                        (!visualNavVideo.played.length && !indoorMapVideo.played.length);
@@ -302,22 +293,22 @@ document.addEventListener('DOMContentLoaded', () => {
         indoorMapVideo.pause();
         console.log("Paused both videos for source update.");
 
-        // Reset readiness flags for standard mode when sources/modes change
         visualNavStandardReady = false;
         indoorMapStandardReady = false;
-        visualNavVideo.dataset.intendedToPlay = 'false'; // Reset intent
+        visualNavVideo.dataset.intendedToPlay = 'false'; 
         indoorMapVideo.dataset.intendedToPlay = 'false';
 
+        // MODIFIED: All text updates here
         if (isRealtimeMode) {
-            visualNavTitle.textContent = "當前位置影像";
-            indoorMapTitle.textContent = "即時室內地圖定位與導航";
+            visualNavTitle.textContent = "Current Location Image";
+            indoorMapTitle.textContent = "Real-Time Indoor Map Localization and Navigation";
             videoOutputArea.classList.add('realtime-mode');
         } else {
-            visualNavTitle.textContent = "視覺導航影片";
-            indoorMapTitle.textContent = "室內地圖定位與導航";
+            visualNavTitle.textContent = "Visual Navigation Preview";
+            indoorMapTitle.textContent = "Indoor Map Localization and Navigation";
             videoOutputArea.classList.remove('realtime-mode');
         }
-        navModeTextLabel.textContent = isRealtimeMode ? "即時視覺導航" : "視覺導航";
+        navModeTextLabel.textContent = isRealtimeMode ? "Real-Time Visual Navigation" : "Visual Navigation";
         
         visualNavVideo.onloadeddata = null; 
         visualNavVideo.onerror = (e) => { console.error("visualNavVideo error during update:", visualNavVideo.error, e); hideLoadingAnimation(visualNavVideo, false); };
@@ -336,7 +327,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log("Camera started for visualNavVideo in realtime mode.");
                 if (indoorMapVideo.src !== config.demoVideos.realtimeIndoorLocation) {
                     console.log("Setting indoorMapVideo source for realtime.");
-                    showLoadingAnimation(indoorMapVideo);
+                    showLoadingAnimation(indoorMapVideo); // Show explicitly before load
                     indoorMapVideo.src = config.demoVideos.realtimeIndoorLocation;
                     indoorMapVideo.load();
                 } else if (indoorMapVideo.paused && (indoorMapWasPlayingPreviously || (cameraStream && !visualNavVideo.paused))) {
@@ -385,7 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const setupStandardVideo = (video, wasPlaying, time, videoSrc, attemptAutoplay, readyFlagSetter) => {
                 return new Promise((resolve, reject) => {
-                    video.dataset.intendedToPlay = (attemptAutoplay || wasPlaying).toString(); // Store intent
+                    video.dataset.intendedToPlay = (attemptAutoplay || wasPlaying).toString();
                     let sourceChanged = false;
                     const currentFullSrc = video.currentSrc ? new URL(video.currentSrc, document.baseURI).pathname : "";
                     const targetFullSrc = videoSrc ? new URL(videoSrc, document.baseURI).pathname : "";
@@ -414,18 +405,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (video.readyState >= 1 && (sourceChanged || Math.abs(video.currentTime - time) > 0.2)) {
                             video.currentTime = time;
                         }
-                        
-                        readyFlagSetter(true); // Mark this video as ready
+                        readyFlagSetter(true);
                         console.log(`${video.id} is now ready. Checking for synchronized play (initial: ${isInitialGenerationPlay}).`);
-                        attemptSynchronizedPlay(isInitialGenerationPlay); // Check if both are ready
-                        
+                        attemptSynchronizedPlay(isInitialGenerationPlay);
                         cleanupListeners(video, onLoadedStd, onErrorStd);
                         resolve();
                     };
                     const onErrorStd = (e) => {
                         console.error(`Error loading ${video.id} (standard):`, e);
                         hideLoadingAnimation(video, false);
-                        readyFlagSetter(false); // Mark as not ready
+                        readyFlagSetter(false);
                         cleanupListeners(video, onLoadedStd, onErrorStd);
                         reject(e);
                     };
@@ -444,7 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     } else if (!videoSrc) { 
                         hideLoadingAnimation(video, false);
-                        readyFlagSetter(true); // "Ready" as there's nothing to load
+                        readyFlagSetter(true); 
                         resolve();
                     } else {
                         hideLoadingAnimation(video, false);
@@ -463,10 +452,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         console.error("A standard video setup failed:", result.reason);
                     }
                 });
-                // Final check for synchronized play in case ready states were met very closely
-                // but not caught by the individual onLoadedStd calls before Promise.allSettled resolved.
-                // However, the onLoadedStd should ideally handle this.
-                // attemptSynchronizedPlay(isInitialGenerationPlay);
             }).finally(() => {
                 requestAnimationFrame(() => { globalIsSyncing = false; console.log("Standard mode video setup complete."); });
             });
@@ -480,7 +465,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function generateVideos() {
         if (!currentPhotoSelected || !destinationPhotoSelected) {
-            alert('請先選擇目前位置和目的地的照片！');
+            alert('Please select images for both current location and target location first!'); // MODIFIED
             return;
         }
         btnGenerateVideos.style.display = 'none';
@@ -490,7 +475,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!navModeToggle.checked) { 
             const checkAndShowLoading = (video, targetSrcPath) => {
                 const targetFilename = targetSrcPath.substring(targetSrcPath.lastIndexOf('/') + 1);
-                if (video.src && video.src.includes(targetFilename) && video.paused && video.readyState < HTMLMediaElement.HAVE_ENOUGH_DATA) {
+                if (video.src && typeof video.src === 'string' && video.src.includes(targetFilename) && video.paused && video.readyState < HTMLMediaElement.HAVE_ENOUGH_DATA) {
                      console.log(`GenerateVideos: Showing loading for preloaded but not ready ${video.id}`);
                     showLoadingAnimation(video);
                 }
@@ -586,7 +571,8 @@ document.addEventListener('DOMContentLoaded', () => {
     stopCamera(); 
     setupInitialVideoSources();
 
-    visualNavTitle.textContent = "視覺導航影片";
-    indoorMapTitle.textContent = "室內地圖定位與導航";
-    navModeTextLabel.textContent = "視覺導航";
+    // MODIFIED: Initial titles and toggle text set to English
+    visualNavTitle.textContent = "Visual Navigation Preview";
+    indoorMapTitle.textContent = "Indoor Map Localization and Navigation";
+    navModeTextLabel.textContent = "Visual Navigation";
 });

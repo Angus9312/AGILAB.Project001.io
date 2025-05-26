@@ -128,7 +128,7 @@ button:disabled { background-color: #ced4da !important; color: #6c757d !importan
 }
 .photo-name-display { font-size: clamp(0.8rem, 2vw, 0.9rem); color: var(--color-text-subtle); margin-top: 8px; word-break: break-all; min-height: 1.2em; }
 
-/* Section Header with Toggle - For "2. 導航影片" */
+/* Section Header with Toggle - For "2. Navigation Video" */
 .section-header-with-toggle {
     display: flex;
     justify-content: center; 
@@ -136,13 +136,13 @@ button:disabled { background-color: #ced4da !important; color: #6c757d !importan
     flex-wrap: wrap;        
     gap: 15px;              
     margin-bottom: 20px;    
-    border-bottom: 2px solid var(--color-primary); /* Line for the whole header */
+    border-bottom: 2px solid var(--color-primary); 
     padding-bottom: 10px; 
 }
-.section-header-with-toggle h2 { /* h2 within this specific header */
+.section-header-with-toggle h2 { 
     font-size: clamp(1.3rem, 4vw, 1.6rem); 
     color: var(--color-neutral-dark);
-    border-bottom: none; /* No individual border */
+    border-bottom: none; 
     padding-bottom: 0;   
     margin-bottom: 0;    
     flex-shrink: 0;
@@ -183,12 +183,17 @@ button:disabled { background-color: #ced4da !important; color: #6c757d !importan
     padding: 18px; box-sizing: border-box; border-radius: 8px;
     display: flex; flex-direction: column;
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
-    /* transition removed for no hover effect */
 }
 .video-box h3 {
     margin-bottom: 12px; color: var(--color-accent);
     font-weight: 600; font-size: clamp(1.15rem, 3.6vw, 1.35rem);
     padding-bottom: 8px; border-bottom: 2px solid var(--color-secondary);
+}
+
+/* Specifically reduce font size for the indoor map title in real-time mode */
+.video-output-area.realtime-mode .video-box #indoor-map-title {
+    font-size: clamp(0.9rem, 2.8vw, 1.1rem); /* Smaller font size */
+    /* line-height: 1.3; /* Uncomment and adjust if needed */
 }
 
 /* Video Player Container and Loading Animation Styles */
@@ -236,15 +241,8 @@ button:disabled { background-color: #ced4da !important; color: #6c757d !importan
     border-radius: 6px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.3);
 }
 .progress-bar-fill { width: 0%; height: 100%; background-color: var(--color-secondary); border-radius: 6px; transition: width 0.3s linear; }
-
-/* Hide progress bar for camera loading animation */
-.loading-animation-overlay.camera-loading .progress-bar-container {
-    display: none;
-}
-.loading-animation-overlay.camera-loading .loading-rocket {
-    margin-bottom: 0; /* Adjust rocket position if no progress bar */
-}
-
+.loading-animation-overlay.camera-loading .progress-bar-container { display: none; }
+.loading-animation-overlay.camera-loading .loading-rocket { margin-bottom: 0; }
 .video-player-container.loading-active video::-webkit-media-controls { display: none !important; opacity: 0; }
 .video-player-container.loading-active video::-moz-media-controls { display: none !important; opacity: 0; }
 
@@ -268,6 +266,10 @@ button:disabled { background-color: #ced4da !important; color: #6c757d !importan
     section { padding: clamp(10px, 3vw, 15px); }
     .video-output-area { padding: 15px; }
     .video-box { padding: 15px; }
+    .video-box h3 { font-size: clamp(1rem, 3vw, 1.2rem); /* Adjust h3 in video boxes for mobile */ }
+    .video-output-area.realtime-mode .video-box #indoor-map-title {
+        font-size: clamp(0.8rem, 2.5vw, 1rem); /* Further adjust specific title on mobile if needed */
+    }
     .loading-rocket { width: 60px; margin-bottom: 15px; }
     .progress-bar-container { height: 10px; }
     @keyframes takeoff { 100% { transform: translateY(-180px) scale(0.3) rotate(15deg); opacity: 0; } }

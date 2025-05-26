@@ -1,53 +1,53 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="en"> <!-- MODIFIED -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AGILAB純視覺定位模型</title>
+    <title>AGILAB Pure Visual Localization Model</title> <!-- MODIFIED -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>純視覺定位模型</h1>
+        <h1>Pure Visual Localization Model</h1> <!-- MODIFIED -->
 
         <section id="photo-upload-section">
-            <h2>1. 上傳位置照片</h2>
+            <h2>1. Upload Location Image</h2> <!-- MODIFIED -->
             <div class="photo-upload-area">
                 <div class="photo-box">
-                    <label for="current-location-file">目前位置照片：</label>
+                    <label for="current-location-file">Current Location Image:</label> <!-- MODIFIED -->
                     <input type="file" id="current-location-file" accept="image/*" style="display: none;">
-                    <button id="btn-select-current-photo">選擇照片</button>
-                    <img id="img-current-photo" src="#" alt="目前位置預覽" class="photo-preview">
-                    <p id="current-photo-name" class="photo-name-display">未選擇圖片</p>
+                    <button id="btn-select-current-photo">Select Photo</button> <!-- MODIFIED -->
+                    <img id="img-current-photo" src="#" alt="Current location preview" class="photo-preview"> <!-- MODIFIED: alt -->
+                    <p id="current-photo-name" class="photo-name-display">No image selected</p> <!-- MODIFIED -->
                 </div>
                 <div class="photo-box">
-                    <label for="destination-file">目的地位置照片：</label>
+                    <label for="destination-file">Target Location Image:</label> <!-- MODIFIED -->
                     <input type="file" id="destination-file" accept="image/*" style="display: none;">
-                    <button id="btn-select-destination-photo">選擇照片</button>
-                    <img id="img-destination-photo" src="#" alt="目的地預覽" class="photo-preview">
-                    <p id="destination-photo-name" class="photo-name-display">未選擇圖片</p>
+                    <button id="btn-select-destination-photo">Select Photo</button> <!-- MODIFIED -->
+                    <img id="img-destination-photo" src="#" alt="Target location preview" class="photo-preview"> <!-- MODIFIED: alt -->
+                    <p id="destination-photo-name" class="photo-name-display">No image selected</p> <!-- MODIFIED -->
                 </div>
             </div>
         </section>
 
         <section id="video-generation-output-section">
             <div class="section-header-with-toggle">
-                <h2>2. 導航影片</h2>
+                <h2>2. Navigation Video</h2> <!-- MODIFIED -->
                 <div class="ios-toggle-switch-container">
                     <input type="checkbox" id="nav-mode-toggle" class="ios-toggle-checkbox">
                     <label for="nav-mode-toggle" class="ios-toggle-label">
                         <span class="ios-toggle-inner"></span>
                         <span class="ios-toggle-switch-knob"></span>
                     </label>
-                    <span id="nav-mode-text" class="nav-mode-text-label">視覺導航</span>
+                    <span id="nav-mode-text" class="nav-mode-text-label">Visual Navigation</span> <!-- MODIFIED: Default for JS to update -->
                 </div>
             </div>
 
-            <button id="btn-generate-videos" disabled>生成影片</button>
+            <button id="btn-generate-videos" disabled>Generate Video</button> <!-- MODIFIED -->
 
             <div id="video-output-area" class="video-output-area hidden">
                 <div class="video-box">
-                    <h3 id="visual-nav-title">視覺導航影片</h3>
+                    <h3 id="visual-nav-title">Visual Navigation Preview</h3> <!-- MODIFIED: Default for JS to update -->
                     <div class="video-player-container">
                         <video id="visual-nav-video" controls autoplay playsinline muted preload="auto"></video>
                         <div class="loading-animation-overlay">
@@ -60,7 +60,7 @@
                     </div>
                 </div>
                 <div class="video-box">
-                    <h3 id="indoor-map-title">室內地圖定位與導航</h3>
+                    <h3 id="indoor-map-title">Indoor Map Localization and Navigation</h3> <!-- MODIFIED: Default for JS to update -->
                      <div class="video-player-container">
                         <video id="indoor-map-video" controls autoplay playsinline muted preload="auto"></video>
                         <div class="loading-animation-overlay">
