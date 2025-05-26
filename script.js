@@ -23,6 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let cameraStream = null;
     let globalIsSyncing = false;
     let videosPreloaded = false;
+    let visualNavStandardReady = false; // NEW: Flag for visualNavVideo in standard mode
+    let indoorMapStandardReady = false; // NEW: Flag for indoorMapVideo in standard mode
 
     // --- Configuration ---
     const config = {
@@ -54,6 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.progressBarFill.style.transition = 'none';
         elements.progressBarFill.style.width = '0%';
         requestAnimationFrame(() => { elements.progressBarFill.style.transition = 'width 0.3s linear'; });
+        
         elements.rocket.classList.remove('takeoff');
         elements.rocket.classList.add('bouncing');
         elements.flames.style.opacity = '0';
@@ -61,6 +64,12 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.overlay.classList.add('active');
         videoElement.closest('.video-player-container').classList.add('loading-active');
         console.log(`Show loading for ${videoElement.id}`);
+
+        if (videoElement === visualNavVideo && navModeToggle.checked) {
+            elements.overlay.classList.add('camera-loading');
+        } else {
+            elements.overlay.classList.remove('camera-loading');
+        }
     }
 
     function updateLoadingProgress(videoElement, progress) {
@@ -76,6 +85,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         console.log(`Hide loading for ${videoElement.id}, takeoff: ${withTakeoff}`);
+        
+        elements.overlay.classList.remove('camera-loading'); 
 
         if (withTakeoff && videoElement.srcObject !== cameraStream) {
             elements.rocket.classList.remove('bouncing');
@@ -100,21 +111,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         videoElement.addEventListener('loadstart', () => {
             console.log(`${videoElement.id} loadstart event`);
-            if (videoElement.srcObject !== cameraStream) {
-                showLoadingAnimation(videoElement);
-            }
+            showLoadingAnimation(videoElement); 
             updateLoadingProgress(videoElement, 0);
         });
         videoElement.addEventListener('progress', () => {
             if (videoElement.duration && videoElement.buffered.length > 0) {
                 const bufferedEnd = videoElement.buffered.end(videoElement.buffered.length - 1);
-                const progress = (bufferedEnd / videoElement.duration) * 100;
-                updateLoadingProgress(videoElement, progress);
+                const progressVal = (bufferedEnd / videoElement.duration) * 100;
+                updateLoadingProgress(videoElement, progressVal);
             }
         });
         videoElement.addEventListener('waiting', () => {
             console.log(`${videoElement.id} waiting event`);
-            if (videoElement.srcObject !== cameraStream) showLoadingAnimation(videoElement);
+            showLoadingAnimation(videoElement); 
         });
         videoElement.addEventListener('canplaythrough', () => {
             console.log(`${videoElement.id} canplaythrough event`);
@@ -134,12 +143,13 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log(`${videoElement.id} emptied event`);
             updateLoadingProgress(videoElement, 0);
         });
+        // Initial check if already loading due to preload, but not enough data
         if (videoElement.src && videoElement.networkState === HTMLMediaElement.NETWORK_LOADING && videoElement.readyState < HTMLMediaElement.HAVE_ENOUGH_DATA && videoElement.srcObject !== cameraStream) {
             showLoadingAnimation(videoElement);
         }
     }
     
-    // --- Core Functions (From version where playback and sync were stable) ---
+    // --- Core Functions ---
     function updateGenerateButtonState() {
         btnGenerateVideos.disabled = !(currentPhotoSelected && destinationPhotoSelected);
     }
@@ -229,7 +239,6 @@ document.addEventListener('DOMContentLoaded', () => {
             visualNavVideo.srcObject = null; 
             console.log("Camera stream detached from video element.");
         }
-        // Controls are set in updateVisualNavSource based on mode
         hideLoadingAnimation(visualNavVideo, false); 
     }
 
@@ -245,6 +254,29 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("Initial video sources set for preloading (standard mode).");
     }
 
+    function attemptSynchronizedPlay(isInitialPlayIntent) {
+        if (navModeToggle.checked) return; // Only for standard mode
+
+        if (visualNavStandardReady && indoorMapStandardReady) {
+            console.log("Both standard videos ready. Attempting synchronized play.");
+            let playVisual = isInitialPlayIntent || (!visualNavVideo.paused && !visualNavVideo.error && visualNavVideo.dataset.intendedToPlay === 'true');
+            let playIndoor = isInitialPlayIntent || (!indoorMapVideo.paused && !indoorMapVideo.error && indoorMapVideo.dataset.intendedToPlay === 'true');
+
+            if (playVisual) {
+                visualNavVideo.play().catch(e => console.warn(`Error playing visualNavVideo (sync attempt):`, e));
+            }
+            if (playIndoor) {
+                indoorMapVideo.play().catch(e => console.warn(`Error playing indoorMapVideo (sync attempt):`, e));
+            }
+            // Reset flags if you want them to re-evaluate readiness next time
+            // visualNavStandardReady = false; 
+            // indoorMapStandardReady = false;
+        } else {
+            console.log(`Synchronized play condition not met: visualNav=${visualNavStandardReady}, indoorMap=${indoorMapStandardReady}`);
+        }
+    }
+
+
     function updateVisualNavSource() {
         const isRealtimeMode = navModeToggle.checked;
         console.log(`updateVisualNavSource called. Realtime mode: ${isRealtimeMode}. globalIsSyncing: ${globalIsSyncing}`);
@@ -254,6 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const indoorMapWasPlayingPreviously = !indoorMapVideo.paused && indoorMapVideo.readyState >= 2;
         const indoorMapCurrentTime = indoorMapVideo.currentTime;
 
+        // isInitialGenerationPlay helps decide if we should force an autoplay attempt
         const isInitialGenerationPlay = !videoOutputArea.classList.contains('hidden') &&
                                        !isRealtimeMode &&
                                        (!visualNavVideo.played.length && !indoorMapVideo.played.length);
@@ -268,6 +301,12 @@ document.addEventListener('DOMContentLoaded', () => {
         visualNavVideo.pause();
         indoorMapVideo.pause();
         console.log("Paused both videos for source update.");
+
+        // Reset readiness flags for standard mode when sources/modes change
+        visualNavStandardReady = false;
+        indoorMapStandardReady = false;
+        visualNavVideo.dataset.intendedToPlay = 'false'; // Reset intent
+        indoorMapVideo.dataset.intendedToPlay = 'false';
 
         if (isRealtimeMode) {
             visualNavTitle.textContent = "當前位置影像";
@@ -288,7 +327,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isRealtimeMode) {
             console.log("Switching to Realtime Mode.");
             stopCamera(); 
-
             visualNavVideo.src = ""; 
             visualNavVideo.removeAttribute("src");
             visualNavVideo.srcObject = null; 
@@ -298,6 +336,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log("Camera started for visualNavVideo in realtime mode.");
                 if (indoorMapVideo.src !== config.demoVideos.realtimeIndoorLocation) {
                     console.log("Setting indoorMapVideo source for realtime.");
+                    showLoadingAnimation(indoorMapVideo);
                     indoorMapVideo.src = config.demoVideos.realtimeIndoorLocation;
                     indoorMapVideo.load();
                 } else if (indoorMapVideo.paused && (indoorMapWasPlayingPreviously || (cameraStream && !visualNavVideo.paused))) {
@@ -341,78 +380,93 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log("Switching to Standard Mode.");
             stopCamera(); 
             visualNavVideo.srcObject = null; 
-
             visualNavVideo.controls = true;
             indoorMapVideo.controls = true;
 
-            const setupStandardVideo = (video, wasPlaying, time, videoSrc, attemptAutoplay) => {
+            const setupStandardVideo = (video, wasPlaying, time, videoSrc, attemptAutoplay, readyFlagSetter) => {
                 return new Promise((resolve, reject) => {
+                    video.dataset.intendedToPlay = (attemptAutoplay || wasPlaying).toString(); // Store intent
                     let sourceChanged = false;
                     const currentFullSrc = video.currentSrc ? new URL(video.currentSrc, document.baseURI).pathname : "";
                     const targetFullSrc = videoSrc ? new URL(videoSrc, document.baseURI).pathname : "";
 
-                    if (currentFullSrc !== targetFullSrc && videoSrc) {
-                        video.src = videoSrc;
-                        sourceChanged = true;
+                    if (targetFullSrc && currentFullSrc !== targetFullSrc) {
+                        video.src = videoSrc; sourceChanged = true;
                     } else if (!video.src && videoSrc) {
-                        video.src = videoSrc;
-                        sourceChanged = true;
+                        video.src = videoSrc; sourceChanged = true;
+                    }
+                    
+                    if (sourceChanged || (video.src.endsWith(videoSrc.substring(videoSrc.lastIndexOf('/')+1)) && video.readyState < HTMLMediaElement.HAVE_ENOUGH_DATA)) {
+                        console.log(`${video.id} (standard) - Condition met to show loading animation.`);
+                        showLoadingAnimation(video);
+                    } else if (video.src.endsWith(videoSrc.substring(videoSrc.lastIndexOf('/')+1)) && (attemptAutoplay || wasPlaying) && video.paused && video.readyState >= HTMLMediaElement.HAVE_ENOUGH_DATA) {
+                        console.log(`${video.id} (standard) - Preloaded, ready, will attempt play. Showing loading animation.`);
+                        showLoadingAnimation(video);
                     }
 
                     if (sourceChanged) {
                         console.log(`Source for ${video.id} changed to ${videoSrc}. JS calling load().`);
-                        video.load();
-                    } else if (video.src === videoSrc && video.readyState < HTMLMediaElement.HAVE_ENOUGH_DATA) {
-                        showLoadingAnimation(video);
+                        video.load(); 
                     }
 
                     const onLoadedStd = () => {
-                        console.log(`${video.id} (standard) loadeddata.`);
+                        console.log(`${video.id} (standard) loadeddata. ReadyState: ${video.readyState}`);
                         if (video.readyState >= 1 && (sourceChanged || Math.abs(video.currentTime - time) > 0.2)) {
                             video.currentTime = time;
                         }
-                        if (attemptAutoplay || wasPlaying) {
-                            console.log(`Attempting to play ${video.id} (standard). Autoplay: ${attemptAutoplay}, WasPlaying: ${wasPlaying}`);
-                            video.play().catch(e => console.warn(`Error playing ${video.id} (standard, onLoadedStd):`, e));
-                        }
+                        
+                        readyFlagSetter(true); // Mark this video as ready
+                        console.log(`${video.id} is now ready. Checking for synchronized play (initial: ${isInitialGenerationPlay}).`);
+                        attemptSynchronizedPlay(isInitialGenerationPlay); // Check if both are ready
+                        
                         cleanupListeners(video, onLoadedStd, onErrorStd);
                         resolve();
                     };
                     const onErrorStd = (e) => {
                         console.error(`Error loading ${video.id} (standard):`, e);
                         hideLoadingAnimation(video, false);
+                        readyFlagSetter(false); // Mark as not ready
                         cleanupListeners(video, onLoadedStd, onErrorStd);
                         reject(e);
                     };
 
-                    if (video.src === videoSrc && video.readyState >= 2 && !sourceChanged) { 
+                    if (video.src.endsWith(videoSrc.substring(videoSrc.lastIndexOf('/')+1)) && video.readyState >= 2 && !sourceChanged) { 
+                        console.log(`${video.id} (standard) - already loaded and source correct. Calling onLoadedStd.`);
                         hideLoadingAnimation(video, false); 
                         onLoadedStd();
-                    } else if (video.src === videoSrc || sourceChanged) { 
+                    } else if (video.src.endsWith(videoSrc.substring(videoSrc.lastIndexOf('/')+1)) || sourceChanged) { 
                         video.addEventListener('loadeddata', onLoadedStd);
                         video.addEventListener('error', onErrorStd);
                         if (!sourceChanged && (video.networkState === HTMLMediaElement.NETWORK_EMPTY || video.networkState === HTMLMediaElement.NETWORK_NO_SOURCE)) {
+                           console.log(`${video.id} (standard) - src was correct but network empty/no_source. Calling load().`);
+                           showLoadingAnimation(video);
                            video.load(); 
                         }
                     } else if (!videoSrc) { 
                         hideLoadingAnimation(video, false);
+                        readyFlagSetter(true); // "Ready" as there's nothing to load
                         resolve();
                     } else {
                         hideLoadingAnimation(video, false);
+                        readyFlagSetter(false);
                         reject(new Error(`${video.id} in unexpected state for standard mode.`));
                     }
                 });
             };
 
             Promise.allSettled([
-                setupStandardVideo(visualNavVideo, visualNavWasPlayingPreviously, visualNavCurrentTime, config.demoVideos.standardVisualNav, isInitialGenerationPlay),
-                setupStandardVideo(indoorMapVideo, indoorMapWasPlayingPreviously, indoorMapCurrentTime, config.demoVideos.standardIndoorMap, isInitialGenerationPlay)
+                setupStandardVideo(visualNavVideo, visualNavWasPlayingPreviously, visualNavCurrentTime, config.demoVideos.standardVisualNav, isInitialGenerationPlay, (isReady) => visualNavStandardReady = isReady),
+                setupStandardVideo(indoorMapVideo, indoorMapWasPlayingPreviously, indoorMapCurrentTime, config.demoVideos.standardIndoorMap, isInitialGenerationPlay, (isReady) => indoorMapStandardReady = isReady)
             ]).then(results => {
                 results.forEach(result => {
                     if (result.status === 'rejected') {
                         console.error("A standard video setup failed:", result.reason);
                     }
                 });
+                // Final check for synchronized play in case ready states were met very closely
+                // but not caught by the individual onLoadedStd calls before Promise.allSettled resolved.
+                // However, the onLoadedStd should ideally handle this.
+                // attemptSynchronizedPlay(isInitialGenerationPlay);
             }).finally(() => {
                 requestAnimationFrame(() => { globalIsSyncing = false; console.log("Standard mode video setup complete."); });
             });
@@ -432,6 +486,19 @@ document.addEventListener('DOMContentLoaded', () => {
         btnGenerateVideos.style.display = 'none';
         videoOutputArea.classList.remove('hidden');
         console.log("Generate Videos button clicked.");
+        
+        if (!navModeToggle.checked) { 
+            const checkAndShowLoading = (video, targetSrcPath) => {
+                const targetFilename = targetSrcPath.substring(targetSrcPath.lastIndexOf('/') + 1);
+                if (video.src && video.src.includes(targetFilename) && video.paused && video.readyState < HTMLMediaElement.HAVE_ENOUGH_DATA) {
+                     console.log(`GenerateVideos: Showing loading for preloaded but not ready ${video.id}`);
+                    showLoadingAnimation(video);
+                }
+            };
+            checkAndShowLoading(visualNavVideo, config.demoVideos.standardVisualNav);
+            checkAndShowLoading(indoorMapVideo, config.demoVideos.standardIndoorMap);
+        }
+        
         updateVisualNavSource();
 
         const attemptScroll = () => {
