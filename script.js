@@ -1,3 +1,8 @@
+// PASTE THE FULL JAVASCRIPT FROM THE PREVIOUS MESSAGE HERE
+// (The one that includes all the loading animation helper functions,
+// fixes for synchronized playback, logic for removing progress bar for camera,
+// core video/camera logic that was confirmed working correctly,
+// AND HAS BEEN TRANSLATED TO ENGLISH FOR UI TEXTS)
 document.addEventListener('DOMContentLoaded', () => {
     // --- DOM Elements ---
     const btnSelectCurrentPhoto = document.getElementById('btn-select-current-photo');
@@ -159,13 +164,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 imgElement.style.display = 'block';
             }
             reader.readAsDataURL(file);
-            nameDisplayElement.textContent = `Selected: ${file.name}`; // MODIFIED
+            nameDisplayElement.textContent = `Selected: ${file.name}`;
             if (photoType === 'current') currentPhotoSelected = true;
             else if (photoType === 'destination') destinationPhotoSelected = true;
         } else {
             imgElement.src = "#";
             imgElement.style.display = 'none';
-            nameDisplayElement.textContent = "No image selected"; // MODIFIED
+            nameDisplayElement.textContent = "No image selected";
             if (photoType === 'current') currentPhotoSelected = false;
             else if (photoType === 'destination') destinationPhotoSelected = false;
         }
@@ -210,10 +215,10 @@ document.addEventListener('DOMContentLoaded', () => {
             visualNavVideo.controls = false; 
             await visualNavVideo.play(); 
             console.log("Camera started successfully and playing.");
-            visualNavTitle.textContent = "Current Location Image"; // MODIFIED
+            visualNavTitle.textContent = "Current Location Image"; 
         } catch (err) {
             console.error("Error starting camera:", err);
-            visualNavTitle.textContent = "Camera Feed (Error)"; // MODIFIED
+            visualNavTitle.textContent = "Camera Feed (Error)";
             if (cameraStream) {
                 cameraStream.getTracks().forEach(track => track.stop());
                 cameraStream = null;
@@ -298,7 +303,6 @@ document.addEventListener('DOMContentLoaded', () => {
         visualNavVideo.dataset.intendedToPlay = 'false'; 
         indoorMapVideo.dataset.intendedToPlay = 'false';
 
-        // MODIFIED: All text updates here
         if (isRealtimeMode) {
             visualNavTitle.textContent = "Current Location Image";
             indoorMapTitle.textContent = "Real-Time Indoor Map Localization and Navigation";
@@ -327,7 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log("Camera started for visualNavVideo in realtime mode.");
                 if (indoorMapVideo.src !== config.demoVideos.realtimeIndoorLocation) {
                     console.log("Setting indoorMapVideo source for realtime.");
-                    showLoadingAnimation(indoorMapVideo); // Show explicitly before load
+                    showLoadingAnimation(indoorMapVideo);
                     indoorMapVideo.src = config.demoVideos.realtimeIndoorLocation;
                     indoorMapVideo.load();
                 } else if (indoorMapVideo.paused && (indoorMapWasPlayingPreviously || (cameraStream && !visualNavVideo.paused))) {
@@ -465,7 +469,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function generateVideos() {
         if (!currentPhotoSelected || !destinationPhotoSelected) {
-            alert('Please select images for both current location and target location first!'); // MODIFIED
+            alert('Please select images for both current location and target location first!');
             return;
         }
         btnGenerateVideos.style.display = 'none';
@@ -475,6 +479,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!navModeToggle.checked) { 
             const checkAndShowLoading = (video, targetSrcPath) => {
                 const targetFilename = targetSrcPath.substring(targetSrcPath.lastIndexOf('/') + 1);
+                // Ensure video.src exists and is a string before calling includes or endsWith
                 if (video.src && typeof video.src === 'string' && video.src.includes(targetFilename) && video.paused && video.readyState < HTMLMediaElement.HAVE_ENOUGH_DATA) {
                      console.log(`GenerateVideos: Showing loading for preloaded but not ready ${video.id}`);
                     showLoadingAnimation(video);
@@ -571,7 +576,6 @@ document.addEventListener('DOMContentLoaded', () => {
     stopCamera(); 
     setupInitialVideoSources();
 
-    // MODIFIED: Initial titles and toggle text set to English
     visualNavTitle.textContent = "Visual Navigation Preview";
     indoorMapTitle.textContent = "Indoor Map Localization and Navigation";
     navModeTextLabel.textContent = "Visual Navigation";
