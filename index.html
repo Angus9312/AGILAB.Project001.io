@@ -48,11 +48,29 @@
             <div id="video-output-area" class="video-output-area hidden">
                 <div class="video-box">
                     <h3 id="visual-nav-title">視覺導航影片</h3>
-                    <video id="visual-nav-video" controls autoplay playsinline muted preload="auto"></video>
+                    <div class="video-player-container">
+                        <video id="visual-nav-video" controls autoplay playsinline muted preload="auto"></video>
+                        <div class="loading-animation-overlay">
+                            <img src="rocket.png" alt="Loading..." class="loading-rocket">
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-fill"></div>
+                            </div>
+                            <div class="rocket-flames"></div>
+                        </div>
+                    </div>
                 </div>
                 <div class="video-box">
                     <h3 id="indoor-map-title">室內地圖定位與導航</h3>
-                    <video id="indoor-map-video" controls autoplay playsinline muted preload="auto"></video>
+                     <div class="video-player-container">
+                        <video id="indoor-map-video" controls autoplay playsinline muted preload="auto"></video>
+                        <div class="loading-animation-overlay">
+                            <img src="rocket.png" alt="Loading..." class="loading-rocket">
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-fill"></div>
+                            </div>
+                             <div class="rocket-flames"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>

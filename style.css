@@ -3,48 +3,19 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
     line-height: 1.6;
     margin: 0;
-    padding: 0; /* Ensure no default padding interferes with top bar */
-    background: linear-gradient(to bottom, #e0e8f0 0%, #f4f7f6 20%, #f4f7f6 100%); /* New gradient background */
+    padding: 0;
+    background: linear-gradient(to bottom, #e0e8f0 0%, #f4f7f6 20%, #f4f7f6 100%);
     color: #333D42;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     display: flex;
-    flex-direction: column; /* Changed to column for top bar */
-    align-items: center; /* Center container horizontally */
-    min-height: 100vh;
-    position: relative; /* For positioning the top bar pseudo-element */
-}
-
-/* NEW: Top Decorative Bar */
-body::before {
-    content: "";
-    display: block;
-    width: 100%;
-    height: 6px; /* Height of the decorative bar */
-    background-color: var(--color-primary); /* Using primary color from your palette */
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 10; /* Ensure it's above other body content if any overlaps */
-}
-
-.container {
-    width: 100%;
-    max-width: 1200px; /* Max width for wider screens */
-    /* For portrait, effectively it will be screen width minus padding */
-    margin: 40px auto 20px auto;
-    background: #ffffff;
-    padding: clamp(15px, 5vw, 25px); /* Adjusted clamp for potentially narrower portrait views */
-    box-sizing: border-box;
-    display: flex;
     flex-direction: column;
-    gap: 25px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    border-radius: 8px;
-    z-index: 1;
+    align-items: center;
+    min-height: 100vh;
+    position: relative;
 }
 
-/* Color Palette */
+/* Color Palette (from the version before dark mode experiments) */
 :root {
     --color-primary: #2A9D8F;
     --color-primary-dark: #217C70;
@@ -62,13 +33,53 @@ body::before {
     --color-success-dark: #218838;
 }
 
+body::before {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 6px;
+    background-color: var(--color-primary);
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 10;
+}
+
+/* Page Entrance Animation */
+@keyframes fadeInSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 40px auto 20px auto;
+    background: var(--color-white);
+    padding: clamp(15px, 5vw, 25px);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    border-radius: 8px;
+    z-index: 1;
+    animation: fadeInSlideUp 0.8s ease-out forwards;
+    opacity: 0;
+}
+
 /* Headings */
 h1, h2, h3 {
     text-align: center;
     margin-top: 0;
 }
 
-/* --- H1 STYLING (ADJUSTED SIZE, NO HOVER TRANSFORM) --- */
 h1 {
     font-size: clamp(1.7rem, 4.5vw, 2.2rem);
     color: var(--color-white);
@@ -109,7 +120,7 @@ h3 {
 
 /* Sections */
 section {
-    padding: clamp(15px, 4vw, 20px); /* Adjusted clamp for section padding */
+    padding: clamp(15px, 4vw, 20px);
     border-radius: 8px;
     background-color: var(--color-white);
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
@@ -122,276 +133,163 @@ button {
     border: none;
     border-radius: 6px;
     cursor: pointer;
-    font-size: clamp(0.9rem, 2.8vw, 1rem); /* Adjusted clamp for button font size */
+    font-size: clamp(0.9rem, 2.8vw, 1rem);
     font-weight: 500;
     transition: background-color 0.2s ease-in-out, transform 0.1s ease;
     display: inline-flex;
     align-items: center;
     justify-content: center;
 }
-
-button:active {
-    transform: scale(0.98);
-}
-
+button:active { transform: scale(0.98); }
 button:disabled {
     background-color: #ced4da !important;
     color: #6c757d !important;
-    cursor: not-allowed;
-    transform: none;
+    cursor: not-allowed; transform: none;
 }
-
 #video-generation-output-section > button#btn-generate-videos {
     background-color: var(--color-primary);
-    display: block;
-    width: 80%;
-    max-width: 300px;
-    margin: 0 auto 20px auto;
-    padding: 12px 20px;
-    font-size: clamp(1rem, 3vw, 1.1rem); /* Adjusted clamp */
+    display: block; width: 80%; max-width: 300px;
+    margin: 0 auto 20px auto; padding: 12px 20px;
+    font-size: clamp(1rem, 3vw, 1.1rem);
 }
-#video-generation-output-section > button#btn-generate-videos:hover {
-    background-color: var(--color-primary-dark);
-}
-
+#video-generation-output-section > button#btn-generate-videos:hover { background-color: var(--color-primary-dark); }
 #photo-upload-section button {
     background-color: var(--color-secondary);
     color: var(--color-text-main);
     margin-top: 8px;
 }
-#photo-upload-section button:hover {
-    background-color: var(--color-secondary-dark);
-}
+#photo-upload-section button:hover { background-color: var(--color-secondary-dark); }
 
 /* Photo Upload Area */
 .photo-upload-area {
-    display: flex;
-    /* Default to horizontal layout for wider screens */
-    justify-content: space-around;
-    flex-wrap: wrap; /* Allow wrapping if space is insufficient even horizontally */
-    gap: 20px;
+    display: flex; justify-content: space-around;
+    flex-wrap: wrap; gap: 20px;
 }
-
 .photo-box {
-    text-align: center;
-    padding: 15px;
-    border: 2px dashed var(--color-secondary);
-    border-radius: 8px;
-    background-color: var(--color-neutral-light);
-    flex: 1 1 300px; /* Base for horizontal layout */
-    min-width: 280px; /* Original min-width for horizontal */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    box-sizing: border-box; /* MODIFICATION: Added for better width control */
+    text-align: center; padding: 15px; border: 2px dashed var(--color-secondary);
+    border-radius: 8px; background-color: var(--color-neutral-light);
+    flex: 1 1 300px; min-width: 280px;
+    display: flex; flex-direction: column; align-items: center; box-sizing: border-box;
 }
-
-.photo-box label {
-    font-weight: 500;
-    margin-bottom: 8px;
-    color: var(--color-neutral-dark);
-}
-
+.photo-box label { font-weight: 500; margin-bottom: 8px; color: var(--color-neutral-dark); }
 .photo-preview {
-    display: block;
-    width: 100%;
-    max-width: 250px; /* Max width of the image itself */
-    height: 180px;
-    margin: 10px auto;
-    border: 1px solid var(--color-neutral-medium);
-    border-radius: 4px;
-    object-fit: cover;
-    background-color: #e9ecef;
+    display: block; width: 100%; max-width: 250px; height: 180px;
+    margin: 10px auto; border: 1px solid var(--color-neutral-medium);
+    border-radius: 4px; object-fit: cover; background-color: #e9ecef;
 }
-
-.photo-name-display {
-    font-size: clamp(0.8rem, 2vw, 0.9rem);
-    color: var(--color-text-subtle);
-    margin-top: 8px;
-    word-break: break-all;
-    min-height: 1.2em;
-}
+.photo-name-display { font-size: clamp(0.8rem, 2vw, 0.9rem); color: var(--color-text-subtle); margin-top: 8px; word-break: break-all; min-height: 1.2em; }
 
 /* Section Header with Toggle */
 .section-header-with-toggle {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px 20px;
-    margin-bottom: 20px;
+    display: flex; justify-content: center; align-items: center;
+    flex-wrap: wrap; gap: 10px 20px; margin-bottom: 20px;
 }
-
-.section-header-with-toggle h2 {
-    margin-bottom: 0;
-    border-bottom: none;
-    padding-bottom: 0;
-}
+.section-header-with-toggle h2 { margin-bottom: 0; border-bottom: none; padding-bottom: 0; }
 
 /* iOS Toggle Switch */
-.ios-toggle-switch-container {
-    display: flex;
-    align-items: center;
-}
-
-.ios-toggle-checkbox {
-    display: none;
-}
-
+.ios-toggle-switch-container { display: flex; align-items: center; }
+.ios-toggle-checkbox { display: none; }
 .ios-toggle-label {
-    display: block;
-    position: relative;
-    width: 52px;
-    height: 32px;
-    border-radius: 16px;
-    background-color: #e9e9eb;
-    cursor: pointer;
+    display: block; position: relative; width: 52px; height: 32px;
+    border-radius: 16px; background-color: #e9e9eb; cursor: pointer;
     transition: background-color 0.3s ease;
     box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
 }
-
 .ios-toggle-switch-knob {
-    display: block;
-    position: absolute;
-    width: 28px;
-    height: 28px;
-    background-color: var(--color-white);
-    border-radius: 14px;
-    top: 2px;
-    left: 2px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    display: block; position: absolute; width: 28px; height: 28px;
+    background-color: var(--color-white); border-radius: 14px;
+    top: 2px; left: 2px; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
     transition: transform 0.3s ease;
 }
-
-.ios-toggle-checkbox:checked + .ios-toggle-label {
-    background-color: var(--color-success);
-}
-
-.ios-toggle-checkbox:checked + .ios-toggle-label .ios-toggle-switch-knob {
-    transform: translateX(20px);
-}
-
-.nav-mode-text-label {
-    font-size: clamp(0.9rem, 2.5vw, 1rem);
-    color: var(--color-text-main);
-    margin-left: 10px;
-    font-weight: 500;
-}
+.ios-toggle-checkbox:checked + .ios-toggle-label { background-color: var(--color-success); }
+.ios-toggle-checkbox:checked + .ios-toggle-label .ios-toggle-switch-knob { transform: translateX(20px); }
+.nav-mode-text-label { font-size: clamp(0.9rem, 2.5vw, 1rem); color: var(--color-text-main); margin-left: 10px; font-weight: 500; }
 
 /* Video Output Area */
 .video-output-area {
-    display: flex;
-    /* Default to horizontal for wider screens */
-    justify-content: space-around;
-    flex-wrap: wrap; /* Allow wrapping */
-    gap: 20px;
-    margin-top: 20px;
-    align-items: stretch;
+    display: flex; justify-content: space-around; flex-wrap: wrap;
+    gap: 20px; margin-top: 20px; align-items: stretch;
 }
-
 .video-box {
-    flex: 1 1 400px; /* Base for horizontal */
-    min-width: 300px; /* Original min-width for horizontal */
-    margin-bottom: 0; /* Handled by gap */
-    text-align: center;
-    background-color: var(--color-neutral-light);
-    padding: 15px;
-    box-sizing: border-box; /* Added for consistency */
-    border-radius: 8px;
-    display: flex;
-    flex-direction: column;
+    flex: 1 1 400px; min-width: 300px; margin-bottom: 0;
+    text-align: center; background-color: var(--color-neutral-light);
+    padding: 15px; box-sizing: border-box; border-radius: 8px;
+    display: flex; flex-direction: column;
     box-shadow: 0 1px 4px rgba(0,0,0,0.05);
 }
+.video-box h3 { margin-bottom: 10px; color: var(--color-neutral-dark); }
 
-.video-box h3 {
-    margin-bottom: 10px;
-    color: var(--color-neutral-dark);
-}
-
-#visual-nav-video,
-#indoor-map-video {
-    width: 100%;
-    height: auto;
+/* Video Player Container and Loading Animation Styles */
+.video-player-container {
+    position: relative; width: 100%;
     background-color: var(--color-black);
-    border-radius: 5px;
-    display: block;
-    object-fit: cover;
-    aspect-ratio: 16 / 9;
+    border-radius: 5px; overflow: hidden;
+}
+.video-player-container video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; }
+#visual-nav-video, #indoor-map-video {
+    border-radius: 5px; object-fit: cover;
     border: 1px solid var(--color-neutral-medium);
 }
+.video-output-area.realtime-mode .video-player-container #visual-nav-video { object-fit: cover; border-color: var(--color-primary); }
+.video-output-area.realtime-mode .video-player-container #indoor-map-video { object-fit: contain; border-color: var(--color-secondary); }
 
-.video-output-area.realtime-mode #visual-nav-video {
-    object-fit: cover;
+.loading-animation-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.65);
+    display: none; flex-direction: column; justify-content: center; align-items: center;
+    z-index: 10; opacity: 0; transition: opacity 0.3s ease-in-out;
 }
-.video-output-area.realtime-mode #indoor-map-video {
-    object-fit: contain;
+.loading-animation-overlay.active { display: flex; opacity: 1; }
+.loading-rocket { width: 80px; height: auto; margin-bottom: 20px; }
+@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+.loading-rocket.bouncing { animation: bounce 0.7s infinite ease-in-out; }
+@keyframes takeoff {
+    0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; }
+    20% { transform: translateY(5px) scale(1) rotate(-2deg); }
+    30% { transform: translateY(0px) scale(1) rotate(2deg); }
+    100% { transform: translateY(-250px) scale(0.3) rotate(15deg); opacity: 0; }
 }
+.loading-rocket.takeoff { animation: takeoff 1.2s ease-in forwards; }
+.rocket-flames {
+    width: 40px; height: 0px;
+    background: linear-gradient(to top, #f4a261, #e76f51, transparent);
+    border-radius: 0 0 50% 50%; position: relative; top: -25px;
+    opacity: 0; transform-origin: bottom center;
+}
+.loading-rocket.takeoff + .rocket-flames { opacity: 1; animation: flamePulsate 0.3s infinite alternate; }
+@keyframes flamePulsate { from { height: 50px; filter: brightness(1); } to { height: 70px; filter: brightness(1.3); } }
+.progress-bar-container {
+    width: 70%; max-width: 250px; height: 12px;
+    background-color: rgba(255, 255, 255, 0.25);
+    border-radius: 6px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.3);
+}
+.progress-bar-fill { width: 0%; height: 100%; background-color: var(--color-secondary); border-radius: 6px; transition: width 0.3s linear; }
+.video-player-container.loading-active video::-webkit-media-controls { display: none !important; opacity: 0; }
+.video-player-container.loading-active video::-moz-media-controls { display: none !important; opacity: 0; }
 
 /* Hidden Utility */
-.hidden {
-    display: none !important;
-}
+.hidden { display: none !important; }
 
-/* Media Queries for Portrait / Narrower Screens */
+/* Media Queries */
 @media (max-width: 767px) {
-    .container {
-        /* Reduce horizontal padding slightly more on very narrow screens */
-        padding-left: clamp(10px, 3vw, 15px);
-        padding-right: clamp(10px, 3vw, 15px);
-        margin-top: 20px;
-        gap: 20px;
-    }
-
-    .photo-upload-area,
-    .video-output-area {
-        flex-direction: column; /* Stack items vertically */
-        align-items: center; /* Center items if they don't take full width */
-    }
-
-    .photo-box,
-    .video-box {
-        flex-basis: auto; /* Reset flex-basis */
-        width: 100%;     /* Take full available width from parent */
-        max-width: 450px; /* But not more than this */
-        min-width: 0; /* MODIFICATION: Crucial for allowing shrink in portrait */
-    }
-
-    h1 {
-        font-size: clamp(1.4rem, 5vw, 1.8rem); /* Adjusted clamp for portrait H1 */
-        padding: 10px 18px;
-        margin-bottom: 20px;
-    }
-
-    /* Ensure section padding isn't too large on narrow screens */
-    section {
-        padding: clamp(10px, 3vw, 15px);
-    }
+    .container { padding-left: clamp(10px, 3vw, 15px); padding-right: clamp(10px, 3vw, 15px); margin-top: 20px; gap: 20px; }
+    .photo-upload-area, .video-output-area { flex-direction: column; align-items: center; }
+    .photo-box, .video-box { flex-basis: auto; width: 100%; max-width: 450px; min-width: 0; margin-bottom: 20px; }
+    .video-box:last-child { margin-bottom: 0; }
+    h1 { font-size: clamp(1.4rem, 5vw, 1.8rem); padding: 10px 18px; margin-bottom: 20px; }
+    section { padding: clamp(10px, 3vw, 15px); }
+    .loading-rocket { width: 60px; margin-bottom: 15px; }
+    .progress-bar-container { height: 10px; }
+    @keyframes takeoff { 100% { transform: translateY(-180px) scale(0.3) rotate(15deg); opacity: 0; } }
 }
-
-/* Media Query for Landscape (original, might need review if portrait is primary) */
 @media (orientation: landscape) and (max-height: 500px) {
-    /* This query is for very short landscape screens */
-    h1 {
-        font-size: clamp(1.2rem, 3.5vw, 1.6rem);
-        padding: 8px 15px;
-        margin-bottom: 15px;
-    }
-    h2 { font-size: clamp(1.1rem, 3.5vw, 1.3rem); margin-bottom: 15px; padding-bottom: 8px;}
-    .container {
-        padding: clamp(10px, 2vw, 15px);
-        gap: 15px;
-        margin-top: 20px;
-    }
+    h1 { font-size: clamp(1.2rem, 3.5vw, 1.6rem); padding: 8px 15px; margin-bottom: 15px; }
+    h2 { font-size: clamp(1.1rem, 3.5vw, 1.3rem); margin-bottom: 15px; padding-bottom: 8px; }
+    .container { padding: clamp(10px, 2vw, 15px); gap: 15px; margin-top: 20px; }
     section { padding: clamp(10px, 2vw, 15px); }
     .photo-preview { height: 150px; }
-
-    /* Ensure photo boxes can still go side-by-side in this specific landscape config if width allows */
-    .photo-upload-area {
-        flex-direction: row; /* Explicitly row for landscape override if needed */
-    }
-    .photo-box {
-        /* Re-apply flex properties for horizontal layout if overridden by max-width:767px */
-        flex: 1 1 250px; /* Adjust basis for short landscape */
-        min-width: 200px; /* Adjust min-width for short landscape */
-    }
+    .photo-upload-area { flex-direction: row; }
+    .photo-box { flex: 1 1 250px; min-width: 200px; margin-bottom: 0; }
+    .video-output-area { flex-direction: row; }
+    .video-box { flex: 1 1 300px; min-width: 250px; margin-bottom: 0; }
 }
