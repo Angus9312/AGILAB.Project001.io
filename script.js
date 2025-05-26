@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- DOM Elements1 ---
+    // --- DOM Elements ---
     const btnSelectCurrentPhoto = document.getElementById('btn-select-current-photo');
     const btnSelectDestinationPhoto = document.getElementById('btn-select-destination-photo');
     const currentPhotoFileInp = document.getElementById('current-location-file');
@@ -22,17 +22,18 @@ document.addEventListener('DOMContentLoaded', () => {
     let destinationPhotoSelected = false;
     let cameraStream = null;
     let globalIsSyncing = false;
+    let videosPreloaded = false;
 
     // --- Configuration ---
     const config = {
         demoVideos: {
             standardVisualNav: 'videos/visual_navigation_demo.mp4',
             standardIndoorMap: 'videos/indoor_map_demo.mp4',
-            realtimeIndoorLocation: 'videos/realtime_indoor_location_demo.mp4' // 假設這個影片內容適合新的標題
+            realtimeIndoorLocation: 'videos/realtime_indoor_location_demo.mp4'
         }
     };
 
-    // --- Functions ---1
+    // --- Functions ---
     function updateGenerateButtonState() {
         btnGenerateVideos.disabled = !(currentPhotoSelected && destinationPhotoSelected);
     }
@@ -100,16 +101,37 @@ document.addEventListener('DOMContentLoaded', () => {
         if (visualNavVideo.srcObject) {
             visualNavVideo.srcObject = null;
         }
-        visualNavVideo.controls = true;
+        if (!navModeToggle.checked) {
+             visualNavVideo.controls = true;
+        }
         console.log("相機已停止");
     }
 
+    function setupInitialVideoSources() {
+        if (videosPreloaded) return;
+
+        if (!visualNavVideo.src && config.demoVideos.standardVisualNav) {
+            visualNavVideo.src = config.demoVideos.standardVisualNav;
+        }
+        if (!indoorMapVideo.src && config.demoVideos.standardIndoorMap) {
+            indoorMapVideo.src = config.demoVideos.standardIndoorMap;
+        }
+        videosPreloaded = true;
+        console.log("Initial video sources set for preloading.");
+    }
+
+
     function updateVisualNavSource() {
         const isRealtimeMode = navModeToggle.checked;
-        const visualNavWasPlaying = !visualNavVideo.paused && visualNavVideo.readyState >= 2;
-        const visualNavCurrentTime = visualNavVideo.currentTime;
-        const indoorMapWasPlaying = !indoorMapVideo.paused && indoorMapVideo.readyState >= 2;
+        const visualNavWasPlayingPreviously = !visualNavVideo.paused && visualNavVideo.readyState >= 2 && visualNavVideo.srcObject !== cameraStream;
+        const visualNavCurrentTime = visualNavVideo.srcObject === cameraStream ? 0 : visualNavVideo.currentTime;
+        const indoorMapWasPlayingPreviously = !indoorMapVideo.paused && indoorMapVideo.readyState >= 2;
         const indoorMapCurrentTime = indoorMapVideo.currentTime;
+
+        const isInitialGenerationPlay = !videoOutputArea.classList.contains('hidden') &&
+                                       !isRealtimeMode &&
+                                       (!visualNavVideo.played.length && !indoorMapVideo.played.length);
+
 
         if (globalIsSyncing) {
             console.warn("正在進行同步操作，updateVisualNavSource 被延遲。");
@@ -121,13 +143,12 @@ document.addEventListener('DOMContentLoaded', () => {
         visualNavVideo.pause();
         indoorMapVideo.pause();
 
-        // <<< 標題更新邏輯 >>>
         if (isRealtimeMode) {
-            visualNavTitle.textContent = "當前位置影像";                  // 即時模式 - 左側
-            indoorMapTitle.textContent = "即時室內地圖定位與導航";      // 即時模式 - 右側 (已更改)
+            visualNavTitle.textContent = "當前位置影像";
+            indoorMapTitle.textContent = "即時室內地圖定位與導航";
         } else {
-            visualNavTitle.textContent = "視覺導航影片";                  // 標準模式 - 左側 (已更改)
-            indoorMapTitle.textContent = "室內地圖定位與導航";          // 標準模式 - 右側 (保持上次的)
+            visualNavTitle.textContent = "視覺導航影片";
+            indoorMapTitle.textContent = "室內地圖定位與導航";
         }
         navModeTextLabel.textContent = isRealtimeMode ? "即時視覺導航" : "視覺導航";
 
@@ -142,14 +163,24 @@ document.addEventListener('DOMContentLoaded', () => {
         indoorMapVideo.onloadeddata = null;
         indoorMapVideo.onerror = (e) => console.error("室內地圖影片錯誤:", indoorMapVideo.id, indoorMapVideo.error, e);
 
+
         if (isRealtimeMode) {
             stopCamera();
+            visualNavVideo.src = "";
+            visualNavVideo.srcObject = null;
+            visualNavVideo.removeAttribute("src");
+            visualNavVideo.controls = false;
+
             startCamera().then(() => {
-                indoorMapVideo.src = config.demoVideos.realtimeIndoorLocation;
-                indoorMapVideo.load();
+                if (indoorMapVideo.src !== config.demoVideos.realtimeIndoorLocation) {
+                    indoorMapVideo.src = config.demoVideos.realtimeIndoorLocation;
+                    indoorMapVideo.load();
+                }
+                indoorMapVideo.controls = true;
+
                 const onMapLoaded = () => {
-                    indoorMapVideo.currentTime = 0;
-                    if (indoorMapWasPlaying || visualNavWasPlaying) {
+                    indoorMapVideo.currentTime = indoorMapWasPlayingPreviously ? indoorMapCurrentTime : 0;
+                    if (indoorMapWasPlayingPreviously || (cameraStream && !visualNavVideo.paused)) {
                          indoorMapVideo.play().catch(e => console.warn("播放即時室內地圖定位與導航影片失敗", e));
                     }
                     cleanupListeners(indoorMapVideo, onMapLoaded, onMapError);
@@ -160,41 +191,102 @@ document.addEventListener('DOMContentLoaded', () => {
                     cleanupListeners(indoorMapVideo, onMapLoaded, onMapError);
                     requestAnimationFrame(() => { globalIsSyncing = false; });
                 };
-                indoorMapVideo.addEventListener('loadeddata', onMapLoaded);
-                indoorMapVideo.addEventListener('error', onMapError);
+
+                if(indoorMapVideo.src === config.demoVideos.realtimeIndoorLocation) {
+                    if (indoorMapVideo.readyState >= 2) {
+                        onMapLoaded();
+                    } else {
+                        indoorMapVideo.addEventListener('loadeddata', onMapLoaded);
+                        indoorMapVideo.addEventListener('error', onMapError);
+                    }
+                } else {
+                    requestAnimationFrame(() => { globalIsSyncing = false; });
+                }
+
             }).catch(() => {
                 requestAnimationFrame(() => { globalIsSyncing = false; });
             });
-        } else {
+
+        } else { // Standard mode (demo videos)
             stopCamera();
             visualNavVideo.srcObject = null;
+            visualNavVideo.controls = true;
+            indoorMapVideo.controls = true;
 
-            visualNavVideo.src = config.demoVideos.standardVisualNav;
-            visualNavVideo.load();
-            indoorMapVideo.src = config.demoVideos.standardIndoorMap;
-            indoorMapVideo.load();
+            const setupStandardVideo = (video, wasPlayingPreviously, time, videoSrc, isLastVideo, attemptAutoplayOverride) => {
+                return new Promise((resolve, reject) => {
+                    let sourceChanged = false;
+                    if (video.src !== videoSrc && videoSrc) {
+                        video.src = videoSrc;
+                        sourceChanged = true;
+                    } else if (!video.src && videoSrc) {
+                        video.src = videoSrc;
+                        sourceChanged = true;
+                    }
 
-            const setupStandardVideo = (video, wasPlaying, time, isLast) => {
-                const onLoaded = () => {
-                    if (video.readyState >= 1) video.currentTime = time;
-                    if (wasPlaying) video.play().catch(e => console.warn(`恢復 ${video.id} 播放失敗`, e));
-                    cleanupListeners(video, onLoaded, onError);
-                    if (isLast) requestAnimationFrame(() => { globalIsSyncing = false; });
-                };
-                const onError = (e) => {
-                    console.error(`載入 ${video.id} 失敗`, e, video.error);
-                    cleanupListeners(video, onLoaded, onError);
-                    if (isLast) requestAnimationFrame(() => { globalIsSyncing = false; });
-                };
-                video.addEventListener('loadeddata', onLoaded);
-                video.addEventListener('error', onError);
+                    if (sourceChanged) {
+                        video.load();
+                    }
+
+                    const onLoaded = () => {
+                        console.log(`${video.id} loadeddata. currentTime before set: ${video.currentTime}, target time: ${time}`);
+                        if (video.readyState >= 1 && (sourceChanged || Math.abs(video.currentTime - time) > 0.2)) {
+                             video.currentTime = time;
+                        }
+                        console.log(`${video.id} currentTime after set: ${video.currentTime}`);
+
+                        if (attemptAutoplayOverride || wasPlayingPreviously) {
+                            console.log(`Attempting to play ${video.id}. Override: ${attemptAutoplayOverride}, WasPlaying: ${wasPlayingPreviously}`);
+                            video.play().catch(e => console.warn(`播放 ${video.id} 失敗 (onLoaded). Error:`, e.name, e.message));
+                        }
+                        cleanupListeners(video, onLoaded, onError);
+                        resolve();
+                        // globalIsSyncing is handled by Promise.allSettled().finally() now
+                    };
+                    const onError = (e) => {
+                        console.error(`載入 ${video.id} 失敗`, e, video.error);
+                        cleanupListeners(video, onLoaded, onError);
+                        reject(e);
+                        // globalIsSyncing is handled by Promise.allSettled().finally() now
+                    };
+
+                    if (video.readyState >= 2 && video.src === videoSrc && !sourceChanged) {
+                        console.log(`${video.id} already has data and correct src. Proceeding.`);
+                        onLoaded();
+                    } else if (video.src === videoSrc || sourceChanged) {
+                        console.log(`${video.id} source is correct or was changed. Adding event listeners.`);
+                        video.addEventListener('loadeddata', onLoaded);
+                        video.addEventListener('error', onError);
+                        if (!sourceChanged && (video.networkState === HTMLMediaElement.NETWORK_EMPTY || video.networkState === HTMLMediaElement.NETWORK_NO_SOURCE)) {
+                            video.load();
+                        }
+                    } else if (!videoSrc) {
+                        console.log(`${video.id} has no target videoSrc.`);
+                        resolve();
+                    } else {
+                        console.warn(`${video.id} in unexpected state. Src: ${video.src}, TargetSrc: ${videoSrc}`);
+                        reject(new Error("Video in unexpected state for " + video.id));
+                    }
+                });
             };
 
-            setupStandardVideo(visualNavVideo, visualNavWasPlaying, visualNavCurrentTime, false);
-            setupStandardVideo(indoorMapVideo, indoorMapWasPlaying, indoorMapCurrentTime, true);
+            Promise.allSettled([
+                setupStandardVideo(visualNavVideo, visualNavWasPlayingPreviously, visualNavCurrentTime, config.demoVideos.standardVisualNav, false, isInitialGenerationPlay),
+                setupStandardVideo(indoorMapVideo, indoorMapWasPlayingPreviously, indoorMapCurrentTime, config.demoVideos.standardIndoorMap, false, isInitialGenerationPlay)
+            ]).then(results => {
+                results.forEach(result => {
+                    if (result.status === 'rejected') {
+                        console.error("A standard video setup failed:", result.reason);
+                    }
+                });
+            }).catch(err => {
+                console.error("Error setting up standard videos (Promise.allSettled):", err);
+            }).finally(() => {
+                requestAnimationFrame(() => { globalIsSyncing = false; console.log("All standard videos setup promise chain done."); });
+            });
         }
     }
-    
+
     function cleanupListeners(videoElement, loadedHandler, errorHandler) {
         videoElement.removeEventListener('loadeddata', loadedHandler);
         videoElement.removeEventListener('error', errorHandler);
@@ -207,68 +299,66 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         btnGenerateVideos.style.display = 'none';
         videoOutputArea.classList.remove('hidden');
-        updateVisualNavSource(); 
 
-        const attemptInitialPlay = () => {
+        console.log("Generate Videos clicked. Calling updateVisualNavSource.");
+        updateVisualNavSource();
+
+        const attemptScroll = () => {
             if (!globalIsSyncing) {
-                console.log("generateVideos: updateVisualNavSource has completed.");
+                console.log("generateVideos: updateVisualNavSource async operations likely complete. Scrolling.");
+                const parentSection = document.getElementById('video-generation-output-section');
+                if (parentSection) parentSection.scrollIntoView({ behavior: 'smooth' });
             } else {
-                requestAnimationFrame(attemptInitialPlay);
+                console.log("generateVideos: Waiting for globalIsSyncing to be false before scrolling.");
+                requestAnimationFrame(attemptScroll);
             }
         };
-        requestAnimationFrame(attemptInitialPlay);
-
-        const parentSection = document.getElementById('video-generation-output-section');
-        if (parentSection) parentSection.scrollIntoView({ behavior: 'smooth' });
+        requestAnimationFrame(attemptScroll);
     }
 
-    function performInitialPlay() {
-        if (globalIsSyncing) {
-            console.warn("performInitialPlay called while globalIsSyncing is true.");
-            return;
-        }
-        globalIsSyncing = true;
-        console.log("執行初始同步播放 (performInitialPlay)...");
-        let playPromises = [];
-        if (visualNavVideo.src || visualNavVideo.srcObject) {
-            if (visualNavVideo.paused) {
-                 playPromises.push(visualNavVideo.play().catch(e => console.warn(`${visualNavVideo.id} initial play failed:`, e)));
-            }
-        }
-        if (indoorMapVideo.src) {
-            if (indoorMapVideo.paused) {
-                playPromises.push(indoorMapVideo.play().catch(e => console.warn(`${indoorMapVideo.id} initial play failed:`, e)));
-            }
-        }
-        Promise.allSettled(playPromises)
-            .finally(() => {
-                requestAnimationFrame(() => { globalIsSyncing = false; });
-            });
-    }
 
     function performSyncAction(sourceVideo, targetVideo, action, value) {
         if (targetVideo === visualNavVideo && navModeToggle.checked && targetVideo.srcObject) return;
         if (sourceVideo === visualNavVideo && navModeToggle.checked && sourceVideo.srcObject && action === 'seek') return;
         if (globalIsSyncing && sourceVideo.id !== 'programmatic') return;
-        if (sourceVideo.id !== 'programmatic') globalIsSyncing = true;
+
+        // Check if the source video of the event is the camera stream
+        const eventSourceIsCamera = sourceVideo === visualNavVideo && navModeToggle.checked && sourceVideo.srcObject;
+
+        if (sourceVideo.id !== 'programmatic') {
+            // If the event source is camera, and we are trying to control the map, allow it.
+            // Otherwise, if syncing is already true, and it's not a programmatic action, potentially skip.
+            // This needs careful handling. For now, let's assume programmatic syncs are fine.
+            // User-initiated syncs (from video events) check globalIsSyncing.
+            globalIsSyncing = true;
+        }
+
 
         let operationPromise = Promise.resolve();
         switch (action) {
             case 'play':
-                if (targetVideo.paused) operationPromise = targetVideo.play();
+                if (targetVideo.paused) {
+                    console.log(`Sync: ${sourceVideo.id} triggered PLAY on ${targetVideo.id}`);
+                    operationPromise = targetVideo.play();
+                }
                 break;
             case 'pause':
-                if (!targetVideo.paused) targetVideo.pause();
+                if (!targetVideo.paused) {
+                    console.log(`Sync: ${sourceVideo.id} triggered PAUSE on ${targetVideo.id}`);
+                    targetVideo.pause(); // Pause is synchronous
+                }
                 break;
             case 'seek':
                 if (targetVideo.readyState >= 1 && Math.abs(targetVideo.currentTime - value) > 0.2) {
+                    console.log(`Sync: ${sourceVideo.id} triggered SEEK on ${targetVideo.id} to ${value}`);
                     targetVideo.currentTime = value;
                 }
                 break;
         }
-        if (operationPromise && typeof operationPromise.finally === 'function') {
+
+        if (operationPromise && typeof operationPromise.catch === 'function' && typeof operationPromise.finally === 'function') {
             operationPromise
-                .catch(e => console.warn(`同步 ${action} 錯誤 ${targetVideo.id}:`, e))
+                .catch(e => console.warn(`同步 ${action} 錯誤 ${targetVideo.id}:`, e.name, e.message))
                 .finally(() => {
                     if (sourceVideo.id !== 'programmatic') requestAnimationFrame(() => { globalIsSyncing = false; });
                 });
@@ -277,17 +367,35 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+
     function setupVideoEventListeners(video1, video2) {
         const createHandler = (action) => () => {
-            if (video1 === visualNavVideo && navModeToggle.checked && video1.srcObject && action === 'seek') return;
-            if (video2 === visualNavVideo && navModeToggle.checked && video2.srcObject) return;
-            if (!globalIsSyncing || action === 'seek') {
-                 performSyncAction(video1, video2, action, action === 'seek' ? video1.currentTime : undefined);
+            const isVideo1Camera = video1 === visualNavVideo && navModeToggle.checked && video1.srcObject;
+            const isVideo2Camera = video2 === visualNavVideo && navModeToggle.checked && video2.srcObject;
+
+            // Prevent camera from being controlled by map video for play/pause/seek
+            if (isVideo2Camera) {
+                console.log(`Event from ${video1.id} (${action}) ignored for target ${video2.id} (camera).`);
+                return;
             }
+            // Prevent camera's seek events from controlling map (camera can't be seeked by user)
+            if (isVideo1Camera && action === 'seek') {
+                console.log(`Seek event from ${video1.id} (camera) ignored.`);
+                return;
+            }
+            // If video1 is camera, allow its play/pause to control video2 (map).
+            // If video1 is map, allow its play/pause/seek to control video2 (visual nav if not camera).
+
+            // More robust check for globalIsSyncing:
+            // If an operation is already in progress by the other video, this event might be an echo.
+            // However, user actions should still try to sync.
+            // The performSyncAction itself has a globalIsSyncing check.
+            console.log(`Event: ${action} on ${video1.id}. globalIsSyncing: ${globalIsSyncing}`);
+            performSyncAction(video1, video2, action, action === 'seek' ? video1.currentTime : undefined);
         };
         video1.addEventListener('play', createHandler('play'));
         video1.addEventListener('pause', createHandler('pause'));
-        video1.addEventListener('seeked', createHandler('seek'));
+        video1.addEventListener('seeked', createHandler('seeked'));
     }
 
     // --- Event Listeners ---
@@ -305,13 +413,15 @@ document.addEventListener('DOMContentLoaded', () => {
     imgCurrentPhoto.style.display = 'none';
     imgDestinationPhoto.style.display = 'none';
     videoOutputArea.classList.remove('realtime-mode');
-    visualNavVideo.onerror = (e) => console.error("視覺導航影片錯誤 (initial):", visualNavVideo.error, e);
-    indoorMapVideo.onerror = (e) => console.error("室內地圖影片錯誤 (initial):", indoorMapVideo.error, e);
+    visualNavVideo.onerror = (e) => console.error("視覺導航影片錯誤 (initial setup):", visualNavVideo.id, visualNavVideo.error, e);
+    indoorMapVideo.onerror = (e) => console.error("室內地圖影片錯誤 (initial setup):", indoorMapVideo.id, indoorMapVideo.error, e);
+
     updateGenerateButtonState();
     stopCamera();
-    
-    // <<< 初始標題設定 (與 HTML 中的初始值一致，並與 updateVisualNavSource 中的標準模式一致) >>>
-    visualNavTitle.textContent = "視覺導航影片";         // (已更改)
-    indoorMapTitle.textContent = "室內地圖定位與導航"; // (保持上次的)
-    navModeTextLabel.textContent = "視覺導航";          // Toggle 旁邊的文字 (預設)
+
+    setupInitialVideoSources();
+
+    visualNavTitle.textContent = "視覺導航影片";
+    indoorMapTitle.textContent = "室內地圖定位與導航";
+    navModeTextLabel.textContent = "視覺導航";
 });

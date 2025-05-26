@@ -48,12 +48,11 @@
             <div id="video-output-area" class="video-output-area hidden">
                 <div class="video-box">
                     <h3 id="visual-nav-title">視覺導航影片</h3>
-                    <video id="visual-nav-video" controls autoplay playsinline muted></video>
+                    <video id="visual-nav-video" controls autoplay playsinline muted preload="auto"></video>
                 </div>
                 <div class="video-box">
                     <h3 id="indoor-map-title">室內地圖定位與導航</h3>
-                    <!-- 為 indoor-map-video 添加 muted 屬性 -->
-                    <video id="indoor-map-video" controls playsinline muted></video>
+                    <video id="indoor-map-video" controls autoplay playsinline muted preload="auto"></video>
                 </div>
             </div>
         </section>
@@ -61,5 +60,3 @@
     <script src="script.js"></script>
 </body>
 </html>
-
-<!-- 測試更新 2025.05.25 -->

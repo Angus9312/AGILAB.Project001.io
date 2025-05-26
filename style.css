@@ -354,7 +354,6 @@ button:disabled {
         width: 100%;     /* Take full available width from parent */
         max-width: 450px; /* But not more than this */
         min-width: 0; /* MODIFICATION: Crucial for allowing shrink in portrait */
-                      /* Or use 'min-width: initial;' or a smaller specific value like '240px' */
     }
 
     h1 {
